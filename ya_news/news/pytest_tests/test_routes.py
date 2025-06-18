@@ -1,5 +1,4 @@
 import pytest
-from pytest_lazy_fixtures import lf
 from http import HTTPStatus
 
 from django.urls import reverse
@@ -53,16 +52,14 @@ def test_comment_delete_not_available_for_reader(reader_client, comment):
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
+@pytest.mark.django_db
 @pytest.mark.parametrize(
-    'name, args',
-    [
-        ('news:edit', lf('comment_id_for_args')),
-        ('news:delete', lf('comment_id_for_args')),
-    ]
+    'name',
+    ('news:edit', 'news:delete')
 )
-def test_redirect_anonymous_to_login(client, name, args):
+def test_redirect_anonymous_to_login(client, comment, name):
     login_url = reverse('users:login')
-    url = reverse(name, args=args)
+    url = reverse(name, args=(comment.pk,))
     expected_url = f'{login_url}?next={url}'
     response = client.get(url)
     assert response.status_code == HTTPStatus.FOUND
