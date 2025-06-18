@@ -80,9 +80,6 @@ def bulk_news():
 
 @pytest.fixture
 def news_with_comments(news, author):
-    """
-    Создает новость с несколькими комментариями с разными датами.
-    """
     now = datetime.now()
     for index in range(5):
         Comment.objects.create(

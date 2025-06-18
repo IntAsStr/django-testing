@@ -3,7 +3,6 @@ from pytest_lazy_fixtures import lf
 from http import HTTPStatus
 
 from django.urls import reverse
-from pytest_django.asserts import assertRedirects
 
 
 @pytest.mark.django_db
