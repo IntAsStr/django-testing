@@ -1,7 +1,8 @@
 import pytest
 
 from django.test.client import Client
-from datetime import datetime, timedelta
+from django.utils import timezone
+from datetime import timedelta
 
 from news.models import Comment, News
 
@@ -67,7 +68,7 @@ def comment_id_for_args(comment):
 
 @pytest.fixture
 def bulk_news():
-    today = datetime.today()
+    today = timezone.now()
     return News.objects.bulk_create(
         News(
             title=f'Новость {index}',
@@ -80,15 +81,17 @@ def bulk_news():
 
 @pytest.fixture
 def news_with_comments(news, author):
-    now = datetime.now()
-    for index in range(5):
+    now = timezone.now()
+    comments = [
         Comment.objects.create(
             news=news,
             author=author,
             text=f'Комментарий {index}',
             created=now + timedelta(hours=index)
         )
-    return news
+        for index in range(5)
+    ]
+    return news, comments
 
 
 @pytest.fixture

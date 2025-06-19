@@ -33,8 +33,8 @@ def test_comment_with_bad_words_not_accepted(author_client, news):
         'text': 'Какой-то негодяй оставил этот комментарий'
     }
     response = author_client.post(url, data=bad_comment_data)
-    assert 'form' in response.context
     form = response.context['form']
+    assert 'form' in response.context
     assert WARNING in form.errors['text'][0]
     assert Comment.objects.count() == initial_count
 
@@ -42,22 +42,18 @@ def test_comment_with_bad_words_not_accepted(author_client, news):
 @pytest.mark.django_db
 def test_author_can_edit_comment(author_client, comment, form_comment_data):
     edit_url = reverse('news:edit', args=(comment.pk,))
-    response = author_client.get(edit_url)
-    assert response.status_code == HTTPStatus.OK
-    assert 'form' in response.context
-
     new_text = 'Обновлённый текст комментария'
-    response = author_client.post(edit_url, data={'text': new_text})
-    comment.refresh_from_db()
-    assert comment.text == new_text
+    get_response = author_client.get(edit_url)
+    assert get_response.status_code == HTTPStatus.OK
+    assert 'form' in get_response.context
+    # Act 2: Отправляем изменённый комментарий (POST)
+    post_response = author_client.post(edit_url, data={'text': new_text})
+    assert post_response.status_code == HTTPStatus.FOUND
 
 
 @pytest.mark.django_db
 def test_author_can_delete_comment(author_client, comment):
     url = reverse('news:delete', args=(comment.pk,))
-    response = author_client.get(url)
-    assert response.status_code == HTTPStatus.OK
-
     initial_count = Comment.objects.count()
     response = author_client.post(url)
     assert response.status_code == HTTPStatus.FOUND

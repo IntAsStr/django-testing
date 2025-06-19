@@ -22,7 +22,8 @@ def test_news_order_on_home_page(client, bulk_news):
 
 @pytest.mark.django_db
 def test_comments_order(client, news_with_comments):
-    url = reverse('news:detail', args=(news_with_comments.pk,))
+    news, comments = news_with_comments
+    url = reverse('news:detail', args=(news.pk,))
     response = client.get(url)
 
     news_object = response.context['news']

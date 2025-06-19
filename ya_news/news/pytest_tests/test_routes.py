@@ -6,16 +6,18 @@ from django.urls import reverse
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    'name',  # Имя параметра функции.
-    # Значения, которые будут передаваться в name.
-    ('news:home', 'users:login', 'users:logout', 'users:signup')
+    'name',
+    ('news:home', 'users:login', 'users:signup')
 )
 def test_home_availability_for_anonymous_user(client, name):
     url = reverse(name)
-    if name == 'users:logout':
-        response = client.post(url)
-    else:
-        response = client.get(url)
+    response = client.get(url)
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_logout_available(client):
+    url = reverse('users:logout')
+    response = client.post(url)
     assert response.status_code == HTTPStatus.OK
 
 
@@ -39,15 +41,12 @@ def test_comment_delete_availability(author_client, comment):
 
 
 @pytest.mark.django_db
-def test_comment_edit_not_available_for_reader(reader_client, comment):
-    url = reverse('news:edit', args=(comment.pk,))
-    response = reader_client.get(url)
-    assert response.status_code == HTTPStatus.NOT_FOUND
-
-
-@pytest.mark.django_db
-def test_comment_delete_not_available_for_reader(reader_client, comment):
-    url = reverse('news:delete', args=(comment.pk,))
+@pytest.mark.parametrize(
+    'name',
+    ('news:edit', 'news:delete')
+)
+def test_comment_not_deleteeditable_for_reader(reader_client, comment, name):
+    url = reverse(name, args=(comment.pk,))
     response = reader_client.get(url)
     assert response.status_code == HTTPStatus.NOT_FOUND
 
