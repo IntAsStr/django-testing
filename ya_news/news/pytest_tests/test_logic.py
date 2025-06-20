@@ -40,35 +40,56 @@ def test_comment_with_bad_words_not_accepted(author_client, news):
 
 
 @pytest.mark.django_db
-def test_author_can_edit_comment(author_client, comment, form_comment_data):
+def test_author_can_edit_comment(author_client, comment):
+    # Arrange
     edit_url = reverse('news:edit', args=(comment.pk,))
     new_text = 'Обновлённый текст комментария'
-    get_response = author_client.get(edit_url)
-    assert get_response.status_code == HTTPStatus.OK
-    assert 'form' in get_response.context
-    # Act 2: Отправляем изменённый комментарий (POST)
-    post_response = author_client.post(edit_url, data={'text': new_text})
-    assert post_response.status_code == HTTPStatus.FOUND
+    original_text = comment.text
+
+    # Act
+    response = author_client.post(edit_url, data={'text': new_text})
+
+    # Assert
+    comment.refresh_from_db()
+    assert response.status_code == HTTPStatus.FOUND
+    assert comment.text == new_text
+    assert comment.text != original_text
 
 
 @pytest.mark.django_db
 def test_author_can_delete_comment(author_client, comment):
-    url = reverse('news:delete', args=(comment.pk,))
+    # Arrange
+    delete_url = reverse('news:delete', args=(comment.pk,))
     initial_count = Comment.objects.count()
-    response = author_client.post(url)
+
+    # Act
+    response = author_client.post(delete_url)
+
+    # Assert
     assert response.status_code == HTTPStatus.FOUND
     assert Comment.objects.count() == initial_count - 1
 
 
 @pytest.mark.django_db
 def test_reader_cant_edit_comment(reader_client, comment):
-    url = reverse('news:edit', args=(comment.pk,))
-    response = reader_client.get(url)
+    # Arrange
+    edit_url = reverse('news:edit', args=(comment.pk,))
+
+    # Act
+    response = reader_client.get(edit_url)
+
+    # Assert
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 @pytest.mark.django_db
 def test_reader_cant_delete_comment(reader_client, comment):
-    url = reverse('news:delete', args=(comment.pk,))
-    response = reader_client.get(url)
+    # Arrange - подготовка данных
+    delete_url = reverse('news:delete', args=(comment.pk,))
+    initial_count = Comment.objects.count()
+    # Act - выполнение действия
+    response = reader_client.post(delete_url)
+
+    # Assert - проверки
     assert response.status_code == HTTPStatus.NOT_FOUND
+    assert Comment.objects.count() == initial_count

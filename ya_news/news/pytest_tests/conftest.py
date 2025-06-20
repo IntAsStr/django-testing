@@ -91,7 +91,7 @@ def news_with_comments(news, author):
         )
         for index in range(5)
     ]
-    return news, comments
+    return comments
 
 
 @pytest.fixture

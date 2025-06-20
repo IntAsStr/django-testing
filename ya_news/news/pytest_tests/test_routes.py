@@ -28,14 +28,12 @@ def test_news_detail_available(client, news):
     assert response.status_code == HTTPStatus.OK
 
 
-def test_comment_edit_availability(author_client, comment):
-    url = reverse('news:edit', args=(comment.pk,))
-    response = author_client.get(url)
-    assert response.status_code == HTTPStatus.OK
-
-
-def test_comment_delete_availability(author_client, comment):
-    url = reverse('news:delete', args=(comment.pk,))
+@pytest.mark.parametrize(
+    'name',
+    ('news:edit', 'news:delete')
+)
+def test_comment_edit_and_delete_availability(author_client, comment, name):
+    url = reverse(name, args=(comment.pk,))
     response = author_client.get(url)
     assert response.status_code == HTTPStatus.OK
 
