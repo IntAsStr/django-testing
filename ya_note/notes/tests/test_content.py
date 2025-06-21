@@ -39,8 +39,8 @@ class TestListPage(TestCase):
         self.client.force_login(self.author)
         url = reverse('notes:list')
         response = self.client.get(url)
-        self.assertIn('object_list', response.context)
         object_list = response.context['object_list']
+        self.assertIn('object_list', response.context)
         self.assertIn(self.note, object_list)
         self.assertIn(self.note_two, object_list)
         # Проверяем, что чужая заметка не попала в список

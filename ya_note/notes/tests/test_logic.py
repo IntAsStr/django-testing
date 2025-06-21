@@ -37,8 +37,8 @@ class TestNoteEditDelete(TestCase):
     def test_author_can_delete_note(self):
         self.client.force_login(self.author)
         response = self.client.post(self.delete_url)
-        self.assertRedirects(response, reverse('notes:success'))
         note_count = Note.objects.count()
+        self.assertRedirects(response, reverse('notes:success'))
         self.assertEqual(note_count, 0)
 
     def test_reader_cannot_delete_note(self):
@@ -102,11 +102,10 @@ class TestNoteEditDelete(TestCase):
         note_data = {
             'title': 'Новая заметка с интересным названием',
             'text': 'Текст заметки',
-            # Поле slug отсутствует
         }
         response = self.client.post(self.add_url, data=note_data)
-        self.assertRedirects(response, reverse('notes:success'))
         note = Note.objects.get(title='Новая заметка с интересным названием')
-        self.assertTrue(note.slug)
         expected_slug = slugify(note_data['title'])
+        self.assertRedirects(response, reverse('notes:success'))
+        self.assertTrue(note.slug)
         self.assertEqual(note.slug, expected_slug)

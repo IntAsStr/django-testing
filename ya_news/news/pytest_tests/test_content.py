@@ -24,7 +24,6 @@ def test_news_order_on_home_page(client, bulk_news):
 def test_comments_order(client, news_with_comments, news):
     url = reverse('news:detail', args=(news.pk,))
     response = client.get(url)
-
     news_object = response.context['news']
     comments = news_object.comment_set.all()
     all_timestamps = [comment.created for comment in comments]
